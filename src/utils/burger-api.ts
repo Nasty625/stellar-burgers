@@ -1,7 +1,7 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 
-const URL = process.env.BURGER_API_URL;
+export const URL = process.env.BURGER_API_URL;
 
 const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
@@ -88,16 +88,13 @@ export const getFeedsApi = () =>
     });
 
 export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+  fetch(`${URL}/orders`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
-    } as HeadersInit
-  }).then((data) => {
-    if (data?.success) return data.orders;
-    return Promise.reject(data);
-  });
+      'Content-Type': 'application/json',
+      Authorization: getCookie('accessToken') as string
+    }
+  }).then((res) => checkResponse<TFeedsResponse>(res));
 
 type TOwner = {
   name: string;
