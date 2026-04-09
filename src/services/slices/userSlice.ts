@@ -79,6 +79,7 @@ const userSlice = createSlice({
         state.isAuthChecked = true;
       })
       .addCase(checkUserAuth.rejected, (state) => {
+        state.user = null;
         state.isAuthChecked = true;
       })
       .addCase(loginUser.pending, (state) => {
@@ -106,8 +107,8 @@ const userSlice = createSlice({
         state.isAuthChecked = true;
       })
       .addCase(updateUser.fulfilled, (state, action: any) => {
-        state.user = action.payload.user;
         state.isAuthChecked = true;
+        state.user = action.payload.user;
       });
   }
 });

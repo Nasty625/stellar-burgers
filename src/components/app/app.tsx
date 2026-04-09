@@ -31,6 +31,7 @@ import {
 } from '../../components';
 import { Preloader } from '@ui';
 import { useSelector } from '../../services/store';
+import { ProtectedRoute } from '../protected-route/protected-route';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -61,18 +62,37 @@ const App = () => {
             <Routes location={background || location}>
               <Route path='/' element={<ConstructorPage />} />
               <Route path='/feed' element={<Feed />} />
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Register />} />
+              <Route
+                path='/login'
+                element={<ProtectedRoute onlyUnAuth component={<Login />} />}
+              />
+              <Route
+                path='/register'
+                element={<ProtectedRoute onlyUnAuth component={<Register />} />}
+              />
 
-              <Route path='/forgot-password' element={<ForgotPassword />} />
+              <Route
+                path='/forgot-password'
+                element={
+                  <ProtectedRoute onlyUnAuth component={<ForgotPassword />} />
+                }
+              />
 
               <Route
                 path='/reset-password'
-                element={!user ? <ResetPassword /> : <Navigate to='/' />}
+                element={
+                  <ProtectedRoute onlyUnAuth component={<ResetPassword />} />
+                }
               />
 
-              <Route path='/profile' element={<Profile />} />
-              <Route path='/profile/orders' element={<ProfileOrders />} />
+              <Route
+                path='/profile'
+                element={<ProtectedRoute component={<Profile />} />}
+              />
+              <Route
+                path='/profile/orders'
+                element={<ProtectedRoute component={<ProfileOrders />} />}
+              />
 
               <Route path='/feed/:number' element={<OrderInfo />} />
               <Route path='/ingredients/:id' element={<IngredientDetails />} />
@@ -104,9 +124,13 @@ const App = () => {
                 <Route
                   path='/profile/orders/:number'
                   element={
-                    <Modal title='Детали заказа' onClose={handleModalClose}>
-                      <OrderInfo />
-                    </Modal>
+                    <ProtectedRoute
+                      component={
+                        <Modal title='Детали заказа' onClose={handleModalClose}>
+                          <OrderInfo />
+                        </Modal>
+                      }
+                    />
                   }
                 />
               </Routes>

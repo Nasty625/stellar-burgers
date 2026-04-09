@@ -29,7 +29,7 @@ export const Profile: FC = () => {
     !!user &&
     (formValue.name !== user?.name ||
       formValue.email !== user?.email ||
-      !!formValue.password);
+      formValue.password !== '');
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
