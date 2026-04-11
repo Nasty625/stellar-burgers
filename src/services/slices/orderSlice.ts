@@ -3,6 +3,7 @@ import { orderBurgerApi } from '../../utils/burger-api';
 import { TOrder } from '@utils-types';
 import { getOrdersApi } from '../../utils/burger-api';
 import { getFeedsApi } from '../../utils/burger-api';
+import { getOrderByNumberApi } from '../../utils/burger-api';
 
 interface TOrderState {
   orderRequest: boolean;
@@ -11,6 +12,7 @@ interface TOrderState {
   allOrders: TOrder[];
   total: number;
   totalToday: number;
+  error: string | null;
 }
 
 const initialState: TOrderState = {
@@ -19,7 +21,8 @@ const initialState: TOrderState = {
   userOrders: [],
   allOrders: [],
   total: 0,
-  totalToday: 0
+  totalToday: 0,
+  error: null
 };
 
 export const createOrder = createAsyncThunk(
@@ -41,6 +44,11 @@ export const getUserOrders = createAsyncThunk(
 export const getAllOrders = createAsyncThunk(
   'order/getAllOrders',
   async () => await getFeedsApi()
+);
+
+export const fetchOrderByNumber = createAsyncThunk(
+  'orders/fetchByNumber',
+  async (number: number) => await getOrderByNumberApi(number)
 );
 
 const orderSlice = createSlice({
@@ -71,6 +79,25 @@ const orderSlice = createSlice({
         state.allOrders = action.payload.orders || [];
         state.total = action.payload.total;
         state.totalToday = action.payload.totalToday;
+      })
+      .addCase(fetchOrderByNumber.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchOrderByNumber.fulfilled, (state, action) => {
+        if (action.payload.orders && action.payload.orders.length > 0) {
+          const newOrder = action.payload.orders[0];
+          const exists = state.allOrders.some(
+            (o) => o.number === newOrder.number
+          );
+          if (!exists) {
+            state.allOrders.push(newOrder);
+          }
+        } else {
+          state.error = 'Заказ не найден';
+        }
+      })
+      .addCase(fetchOrderByNumber.rejected, (state) => {
+        state.error = 'Ошибка загрузки заказа'; // Если сервер ответил 404 или 500
       });
   }
 });

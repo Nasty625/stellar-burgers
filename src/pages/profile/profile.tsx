@@ -20,20 +20,34 @@ export const Profile: FC = () => {
       setFormValue((prevState) => ({
         ...prevState,
         name: user.name,
-        email: user.email
+        email: user.email,
+        password: ''
       }));
     }
   }, [user]);
 
   const isFormChanged =
     !!user &&
-    (formValue.name !== user?.name ||
-      formValue.email !== user?.email ||
-      formValue.password !== '');
+    (formValue.name.trim() !== user.name.trim() ||
+      formValue.email.trim() !== user.email.trim() ||
+      formValue.password.trim() !== '');
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(updateUser(formValue));
+    dispatch(updateUser(formValue))
+      .unwrap()
+      .then((updatedUser) => {
+        console.log('Данные обновлены успешно');
+        // Системный updatedUser — это то, что вернул сервер
+        setFormValue({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          password: '' // Очищаем пароль ОБЯЗАТЕЛЬНО
+        });
+      })
+      .catch((err) => {
+        console.log('Ошибка при сохранении:', err); // Посмотри, что тут
+      });
   };
 
   const handleCancel = (e: SyntheticEvent) => {
@@ -53,6 +67,11 @@ export const Profile: FC = () => {
       [e.target.name]: e.target.value
     }));
   };
+
+  console.log('Имя совпадает?', formValue.name === user?.name);
+  console.log('Email совпадает?', formValue.email === user?.email);
+  console.log('Пароль пустой?', formValue.password === '');
+  console.log('Финальный isFormChanged:', isFormChanged);
 
   return (
     <ProfileUI
