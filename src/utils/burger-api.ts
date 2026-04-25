@@ -1,7 +1,7 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 
-const URL = process.env.BURGER_API_URL;
+export const URL = process.env.BURGER_API_URL;
 
 const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
@@ -45,8 +45,10 @@ export const fetchWithRefresh = async <T>(
   } catch (err) {
     if ((err as { message: string }).message === 'jwt expired') {
       const refreshData = await refreshToken();
+      localStorage.setItem('refreshToken', refreshData.refreshToken);
+      setCookie('accessToken', refreshData.accessToken);
       if (options.headers) {
-        (options.headers as { [key: string]: string }).authorization =
+        (options.headers as { [key: string]: string }).Authorization =
           refreshData.accessToken;
       }
       const res = await fetch(url, options);
@@ -88,15 +90,12 @@ export const getFeedsApi = () =>
     });
 
 export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+  fetchWithRefresh(`${URL}/orders`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
-    } as HeadersInit
-  }).then((data) => {
-    if (data?.success) return data.orders;
-    return Promise.reject(data);
+      'Content-Type': 'application/json',
+      Authorization: getCookie('accessToken') as string
+    }
   });
 
 type TOwner = {
@@ -226,8 +225,9 @@ type TUserResponse = TServerResponse<{ user: TUser }>;
 
 export const getUserApi = () =>
   fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+    method: 'GET',
     headers: {
-      authorization: getCookie('accessToken')
+      Authorization: getCookie('accessToken')
     } as HeadersInit
   });
 
@@ -236,7 +236,7 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      Authorization: getCookie('accessToken')
     } as HeadersInit,
     body: JSON.stringify(user)
   });

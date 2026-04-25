@@ -1,23 +1,32 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+import { fetchOrderByNumber } from '../../services/slices/orderSlice';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useDispatch();
+  const { ingredients } = useSelector((state) => state.ingredients);
+  const { allOrders, userOrders } = useSelector((state) => state.order);
+  const { error } = useSelector((state) => state.order);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    const orderExists = [...allOrders, ...userOrders].some(
+      (o) => o.number === Number(number)
+    );
+    if (!orderExists && number) {
+      dispatch(fetchOrderByNumber(Number(number)));
+    }
+  }, [dispatch, number, allOrders, userOrders]);
+  const orderData = useMemo(
+    () =>
+      [...allOrders, ...userOrders].find((o) => o.number === Number(number)),
+    [allOrders, userOrders, number]
+  );
 
-  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -26,7 +35,6 @@ export const OrderInfo: FC = () => {
     type TIngredientsWithCount = {
       [key: string]: TIngredient & { count: number };
     };
-
     const ingredientsInfo = orderData.ingredients.reduce(
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
@@ -58,6 +66,10 @@ export const OrderInfo: FC = () => {
       total
     };
   }, [orderData, ingredients]);
+
+  if (error) {
+    return <p className='text text_type_main-medium'>{error}</p>;
+  }
 
   if (!orderInfo) {
     return <Preloader />;
