@@ -1,9 +1,11 @@
+import { error } from 'console';
 import ingredientsReducer, { getIngredients } from './ingredientsSlice';
 
 describe('тестирование слайса ingredients', () => {
   const initialState = {
     ingredients: [],
-    loading: false
+    loading: false,
+    error: null
   };
 
   it('должен менять loading на true при запросе getIngredients.pending', () => {
@@ -27,11 +29,17 @@ describe('тестирование слайса ingredients', () => {
   });
 
   it('должен менять loading на false при getIngredients.rejected', () => {
-    const action = { type: getIngredients.rejected.type };
+    const mockError = 'Error';
+    const action = {
+      type: getIngredients.rejected.type,
+      error: { message: mockError }
+    };
+
     const state = ingredientsReducer(
       { ...initialState, loading: true },
       action
     );
     expect(state.loading).toBe(false);
+    expect(state.error).toBe(mockError);
   });
 });
