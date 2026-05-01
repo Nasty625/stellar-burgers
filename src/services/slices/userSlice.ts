@@ -15,11 +15,13 @@ import { registerUserApi } from '../../utils/burger-api';
 interface TUserState {
   user: TUser | null;
   isAuthChecked: boolean;
+  error: string | null;
 }
 
 const initialState: TUserState = {
   user: null,
-  isAuthChecked: false
+  isAuthChecked: false,
+  error: null
 };
 
 export const checkUserAuth = createAsyncThunk(
@@ -81,9 +83,11 @@ const userSlice = createSlice({
       .addCase(checkUserAuth.rejected, (state) => {
         state.user = null;
         state.isAuthChecked = true;
+        state.error = null;
       })
       .addCase(loginUser.pending, (state) => {
         state.isAuthChecked = false;
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload;
@@ -91,11 +95,14 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isAuthChecked = true;
+        state.error = action.error.message || 'Login failed';
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
       })
-      .addCase(logoutUser.rejected, (state, action) => {})
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.error = action.error.message || 'Logout failed';
+      })
       .addCase(registerUser.pending, (state) => {
         state.isAuthChecked = false;
       })
@@ -105,12 +112,16 @@ const userSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isAuthChecked = true;
+        state.error = action.error.message || 'Registration failed';
       })
       .addCase(updateUser.fulfilled, (state, action: any) => {
         state.isAuthChecked = true;
         state.user = action.payload.user || action.payload;
       })
-      .addCase(updateUser.pending, (state) => {});
+      .addCase(updateUser.pending, (state) => {})
+      .addCase(updateUser.rejected, (state, action) => {
+        state.error = action.error.message || 'Update failed';
+      });
   }
 });
 
