@@ -68,17 +68,30 @@ const orderSlice = createSlice({
         state.orderRequest = false;
         state.orderModalData = action.payload.order as unknown as TOrder;
       })
-      .addCase(createOrder.rejected, (state) => {
+      .addCase(createOrder.rejected, (state, action) => {
         state.orderRequest = false;
+        state.error = action.error.message || 'Ошибка создания заказа';
       })
       .addCase(getUserOrders.fulfilled, (state, action: any) => {
         state.userOrders = action.payload.orders || [];
       })
-      .addCase(getUserOrders.rejected, (state, action) => {})
+      .addCase(getUserOrders.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(getUserOrders.rejected, (state, action) => {
+        state.error =
+          action.error.message || 'Ошибка загрузки заказов пользователя';
+      })
       .addCase(getAllOrders.fulfilled, (state, action) => {
         state.allOrders = action.payload.orders || [];
         state.total = action.payload.total;
         state.totalToday = action.payload.totalToday;
+      })
+      .addCase(getAllOrders.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(getAllOrders.rejected, (state, action) => {
+        state.error = action.error.message || 'Ошибка загрузки ленты заказов';
       })
       .addCase(fetchOrderByNumber.pending, (state) => {
         state.error = null;

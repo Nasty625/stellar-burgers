@@ -5,11 +5,13 @@ import { TIngredient } from '@utils-types';
 interface IIngredientsState {
   ingredients: TIngredient[];
   loading: boolean;
+  error: string | null;
 }
 
 const initialState: IIngredientsState = {
   ingredients: [],
-  loading: false
+  loading: false,
+  error: null
 };
 
 export const getIngredients = createAsyncThunk(
@@ -31,6 +33,7 @@ const ingredientsSlice = createSlice({
       })
       .addCase(getIngredients.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.error.message || 'Error';
       });
   }
 });
